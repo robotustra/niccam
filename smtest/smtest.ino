@@ -4,9 +4,14 @@
   Read 2 input pins and show the status on the output pins
 */
 
+#define NMAX  20000
+
 unsigned long currTime;
 unsigned long timer;
 byte incomingByte;
+int dt = 1;
+int dt0 = 2;
+int act = 50;
 
 const int en_pin = 9;
 const int dir_pin = 10;
@@ -28,7 +33,7 @@ void setup() {
   pinMode(puc, INPUT_PULLUP);
 
   // Fast enough to get command and not to interfer the steppers move.
-  Serial.begin(115200);
+  //Serial.begin(115200);
   //Serial.begin(38400);
   
 }
@@ -53,27 +58,40 @@ void loop() {
 
   }
   // Read command and convert it into steps.
-  if (Serial.available() > 0) 
+  /*if (Serial.available() > 0) 
   {
     incomingByte = Serial.read();
     if (incomingByte == '>') { ;; }
-  }
+  }*/
   // Move motors (X,Y) (servos, they don't loose steps.)
-  enable_motors();
+  //enable_motors();
   digitalWrite(dir_pin, HIGH);
-  for (i = 0; i<4096; i++){
+  for (i = 0; i<NMAX; i++){
     digitalWrite(pul_pin, HIGH);
-    delay (1);
+    
+    if(i >= 0 && i< act) dt = dt0 + act-i;
+    else if (i > (NMAX-act) && i < NMAX ) dt = dt0 + act - (NMAX-i) ;
+    else dt = dt0;
+    
+      delayMicroseconds (dt);
     digitalWrite(pul_pin, LOW);
-    delay (1);
+      delayMicroseconds (dt);
   }
+  delay(100);
   digitalWrite(dir_pin, LOW);
-  for (i = 0; i<4096; i++){
+  for (i = 0; i<20000; i++){
     digitalWrite(pul_pin, HIGH);
-    delay (1);
+    
+   if(i >= 0 && i< act) dt = dt0 + act-i;
+    else if (i > (NMAX-act) && i < NMAX ) dt = dt0 + act - (NMAX-i) ;
+    else dt = dt0;
+    
+    
+    delayMicroseconds (dt);
     digitalWrite(pul_pin, LOW);
-    delay (1);
+    delayMicroseconds (dt);
   }
-  disable_motors();
+  //disable_motors();
+  delay(100);
 }
 
